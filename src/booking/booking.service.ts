@@ -1,26 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/sequelize';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
+import { Booking } from './models/booking.module';
 
 @Injectable()
 export class BookingService {
-  create(createBookingDto: CreateBookingDto) {
-    return 'This action adds a new booking';
+  constructor(
+    @InjectModel(Booking) private bookingRepository: typeof Booking,
+  ) {}
+
+  async create(createBookingDto: CreateBookingDto) {
+    return await this.bookingRepository.create(createBookingDto);
   }
 
-  findAll() {
-    return `This action returns all booking`;
+  async findAll() {
+    return await this.bookingRepository.findAll({ include: { all: true } });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} booking`;
+  async findOne(id: number) {
+    return await this.bookingRepository.findByPk(+id);
   }
 
-  update(id: number, updateBookingDto: UpdateBookingDto) {
-    return `This action updates a #${id} booking`;
+  async update(id: number, updateBookingDto: UpdateBookingDto) {
+    const check = await this.bookingRepository.findByPk(id);
+    if (!check) {
+      throw new HttpException('Id is incorrect', HttpStatus.BAD_REQUEST);
+    }
+    const newDistrict = await this.bookingRepository.update(
+      {
+        ...updateBookingDto,
+      },
+      { where: { id: id }, returning: true },
+    );
+    return newDistrict;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} booking`;
+  async remove(id: number) {
+    return await this.bookingRepository.destroy({
+      where: {
+        id: +id,
+      },
+    });
   }
 }
