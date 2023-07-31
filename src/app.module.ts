@@ -6,6 +6,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AdminModule } from './admin/admin.module';
+import { Admin } from './admin/models/admin.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -22,11 +24,14 @@ import { AdminModule } from './admin/admin.module';
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
       database: process.env.POSTGRES_DB,
+      models: [Admin],
       autoLoadModels: true,
       logging: false,
     }),
 
     AdminModule,
+
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
